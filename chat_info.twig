@@ -1,0 +1,78 @@
+{{ header }}
+<ul class="breadcrumb">
+	{% for breadcrumb in breadcrumbs %}
+		<li>
+			<a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+		</li>
+	{% endfor %}
+</ul>
+{% if j3.settings.get('pageTitlePosition') == 'top' %}
+	<h1 class="title page-title">
+		<span>{{ heading_title }}</span>
+	</h1>
+{% endif %}
+{{ j3.loadController('journal3/layout', 'top') }}
+<div id="account-order" class="container">
+	<div class="row">{{ column_left }}
+		{% if column_left and column_right %}
+			{% set class = 'col-sm-6' %}
+		{% elseif column_left or column_right %}
+			{% set class = 'col-sm-9' %}
+		{% else %}
+			{% set class = 'col-sm-12' %}
+		{% endif %}
+		<div id="content" class="{{ class }}">
+			{% if j3.settings.get('pageTitlePosition') == 'default' %}
+				<h1 class="title page-title">{{ heading_title }}</h1>
+			{% endif %}
+			<h3>{{target}}</h3>
+			{{ content_top }}
+			<div style="height: 87%;width: 100%;display: grid;">
+				<div style="display: flex; flex-direction: column; ">
+					<div class="chat-area" style="overflow: scroll; overflow-x: hidden;display: grid;">
+                        {% for message in messages %}
+                            {% if message.vendor_id != vendor_id %}
+                            <div>
+                                <p>{{message.message}}</p>
+                            </div>
+                            {% else %}
+                            <div>
+                                <p style="float: right">{{message.message}}</p>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+					</div>
+				</div>
+				<div style="align-self: flex-end;width: 100%;display: flex;align-self: flex-end;width: 100%;display: flex;gap: 5px;padding: 10px;">
+					<input class="chat-input" style="width: 100%" type="text" placeholder="Mesajınız..."/>
+					<button style="padding: 4px;border-radius: 6px;" onclick="sendMessage()">Gönder!</button>
+				</div>
+			</div>
+			{{ content_bottom }}</div>
+		{{ column_right }}</div>
+</div>
+{{ footer }}
+
+<script>
+    const sendMessage = () => {
+        var input = $(".chat-input")
+        if((input.val()).length > 1){
+            $.ajax(`index.php?route=account/chat/sendMessage`, {
+                type: 'POST',
+                dataType: 'JSON',
+                data: {
+                    room_id: {{room_id}},
+                    message: input.val()
+                }
+            }).then( data => {
+                if(data.error){
+                    alert(data.response)
+                } else {
+                    $(".chat-area").append(`<div><p style="float: right">${input.val()}</p></div>`);
+                    input.val('')
+                }
+            })
+        }
+
+    }
+</script>
